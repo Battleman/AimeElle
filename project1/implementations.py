@@ -59,13 +59,14 @@ def least_squares_GD(y, tx, initial_w, max_iters, gamma):
 
 
 def least_squares_SGD(y, tx, initial_w, max_iters, gamma):
-    w = initial_w
-    for n_iter in range(max_iters):
-        for y_batch, tx_batch in batch_iter(y, tx, batch_size):
-            grad = compute_gradient(y, tx, w)
-            w = w - gamma*grad
-    loss = MSE(y, tx, w)
-    return (w, loss)
+    weights = initial_w
+    for _ in range(max_iters):
+        rand_index = np.random.randint(y.shape)
+        y_batch, tx_batch = y[rand_index], tx[rand_index]
+        grad = compute_gradient(y_batch, tx_batch, weights)
+        weights = weights - gamma*grad
+    loss = MSE(y, tx, weights)
+    return (weights, loss)
 
 
 def least_squares(y, tx):
@@ -90,40 +91,41 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
         """apply sigmoid function on t."""
         return 1/(1+np.exp(-t))
 
-    def calculate_gradient(y, tx, w):
+    def calculate_gradient(gradient_y, gradient_tx, gradient_w):
         """compute the gradient of loss."""
-        pred = sigmoid(tx.dot(w))
-        grad = tx.T.dot(pred - y)
+        pred = sigmoid(gradient_tx.dot(gradient_w))
+        grad = gradient_tx.T.dot(pred - gradient_y)
         return grad
 
-    def calculate_loss(y, tx, w):
+    def calculate_loss(y, loss_tx, loss_w):
         """compute the cost by negative log likelihood."""
-        pred = sigmoid(tx.dot(w))
+        pred = sigmoid(loss_tx.dot(loss_w))
         loss = y.T.dot(np.log(pred)) + (1 - y).T.dot(np.log(1 - pred))
         return np.squeeze(- loss)
 
-    def learning_by_gradient_descent(y, tx, w, gamma):
-        """
-        Do one step of gradient descen using logistic regression.
-        Return the loss and the updated w.
-        """
-        loss = calculate_loss(y, tx, w)
-        grad = calculate_gradient(y, tx, w)
-        w2 = w - gamma * grad
-        print("W went from {} to {}".format(w, w2))
-        return loss, w2
+    # def learning_by_gradient_descent(local_y, local_tx, local_w, local_gamma):
+    #     """
+    #     Do one step of gradient descent using logistic regression.
+    #     Return the loss and the updated w.
+    #     """
+    #     loss = calculate_loss(local_y, local_tx, local_w)
+    #     grad = calculate_gradient(local_y, local_tx, local_w)
+    #     w2 = local_w - local_gamma * grad
+    #     print("W went from {} to {}".format(local_w, w2))
+    #     return loss, w2
 
-    losses = []
-    w = initial_w
+    # losses = []
+    weights = initial_w
     for i in range(max_iters):
         # get loss and update w.
-        loss, w = learning_by_gradient_descent(y, tx, w, gamma)
-        # converge criterion
-        print("Step {}, loss is {}".format(i, loss))
-        losses.append(loss)
-        if len(losses) > 1 and np.abs(losses[-1] - losses[-2]) < 1e-8:
-            break
-    return (w, loss)
+        loss = calculate_loss(y, tx, weights)
+        grad = calculate_gradient(y, tx, weights)
+        weights = weights - gamma * grad        # converge criterion
+        # print("Step {}, loss is {}".format(i, loss))
+        # losses.append(loss)
+        # if len(losses) > 1 and np.abs(losses[-1] - losses[-2]) < 1e-8:
+        #     break
+    return (weights, loss)
 
 
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
