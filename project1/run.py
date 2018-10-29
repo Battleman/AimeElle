@@ -70,8 +70,28 @@ for cat, deg, top_feat, other_feat in zip(tx_by_cat, degrees, top_feat_by_cat, o
 lambdas = [0.001, 0.003, 0.01]
 weights_by_cat = []
 print("Computing weights")
-for lamb, tx in zip(lambdas, augmented_tx_by_cat, y_by_cat):
-    weights_by_cat.append(ridge_regression(y_by_cat, tx_by_cat, lamb))
+for lamb, tx_cat, y_cat in zip(lambdas, augmented_tx_by_cat, y_by_cat):
+    weights_by_cat.append(ridge_regression(y_cat, tx_cat, lamb))
+
+print("Loading test data")
+(y_test, tx_test, ids_test) = (np.array(x) for x in load_csv_data("data/test.csv"))
 
 print("Computing predictions")
-    
+rows_per_cat_test = [
+    np.array([np.where(tx[:,CAT_COL] == 0)[0]]),
+    np.array([np.where(tx[:,CAT_COL] == 1)[0]]),
+    np.array([np.where(tx[:,CAT_COL] >= 2)[0]])
+]
+
+y_predict = np.zeros(tx_test.shape[0])
+
+category_col = tx_test[:,CAT_COL]
+#Merge categories 2 and 3 into one single category (2)
+cat3_idx = np.where(category_col == 3)
+category_col[cat3_idx] = 2*np.ones(len(cat3_idx))
+
+
+for i in range(len(weights_by_cat)):
+    y_predict[np.where(category_col == i)[0]] = predict_labels(weights_by_cat[i], augmented_tx_by_cat[i])
+
+create_csv_submission(ids_test, y_predict, 'submission.csv')

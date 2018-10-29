@@ -60,7 +60,7 @@ def build_multinomial_crossterms(tx, degree):
     Xtmp = np.ones_like(tx[:, 0])
     print("Building multinomial feature matrix")
     for ord in order:
-        print("Order {}".format(ord))
+        # print("Order {}".format(ord))
         if ord == 1:
             fstmp = tx
         else:
@@ -99,7 +99,7 @@ def build_multinomial(tx, degree, important_features, other_features):
         data_col = tx[:, feature]
         poly_other.append(build_poly(data_col, degree)[:, 1:])
     poly_other = np.concatenate(poly_other, axis=1)
-    print("Poly other is {}".format(poly_other))
+    # print("Poly other is {}".format(poly_other))
     # build polinomial with cross terms as well for important features
     poly_important = build_multinomial_crossterms(
         tx[:, important_features], degree)
