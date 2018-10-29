@@ -43,6 +43,56 @@ def NLL(y, tx, w):
     pred = sigmoid(tx.dot(w))
     loss = y.T.dot(np.log(pred)) + (1 - y).T.dot(np.log(1 - pred))
     return np.squeeze(- loss)
+
+
+def multinomial_partitions(n, k):
+    """returns an array of length k sequences of integer partitions of n"""
+    nparts = itertools.combinations(range(1, n+k), k-1)
+    tmp = [(0,) + p + (n+k,) for p in nparts]
+    sequences = np.diff(tmp) - 1
+    return sequences[::-1]  # reverse the order
+
+
+def build_multinomial_crossterms(tx, degree):
+    '''Make multinomial feature matrix'''
+    order = np.arange(degree)+1
+    Xtmp = np.ones_like(tx[:, 0])
+    for ord in order:
+        if ord == 1:
+            fstmp = tx
+        else:
+            pwrs = multinomial_partitions(ord, tx.shape[1])
+            fstmp = np.column_stack(
+                (np.prod(tx**pwrs[i, :], axis=1) for i in range(pwrs.shape[0])))
+
+        Xtmp = np.column_stack((Xtmp, fstmp))
+    return Xtmp
+
+
+def build_poly(x, degree):
+    # polynomial basis function:
+    # this function should return the matrix formed
+    # by applying the polynomial basis to the input data
+
+    phi = np.vander(x, N=degree+1, increasing=True)
+
+    return phi
+
+
+def build_multinomial(tx, degree, important_features, other_features):
+    # build usual polinomial
+    poly_other = []
+    for feature in other_features:
+        poly_other.append(build_poly(tx[:, feature], degree)[:, 1:])
+    poly_other = np.concatenate(poly_other, axis=1)
+
+    # build polinomial with cross terms as well for important features
+    poly_important = build_multinomial_crossterms(
+        tx[:, important_features], degree)
+
+    poly = np.column_stack((poly_important, poly_other))
+
+    return poly
 ########################
 ###### ASSIGNMENT ######
 ########################
@@ -129,4 +179,4 @@ def logistic_regression(y, tx, initial_w, max_iters, gamma):
 
 
 def reg_logistic_regression(y, tx, lambda_, initial_w, max_iters, gamma):
-    pass    
+    pass
