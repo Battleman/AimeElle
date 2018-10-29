@@ -3,6 +3,7 @@
 ########################
 import numpy as np
 import itertools
+from proj1_helpers import *
 
 ########################
 ######## HELPERS #######
@@ -138,6 +139,45 @@ def least_squares(y, tx):
     w = np.linalg.solve(a, b)
     loss = MSE(y, tx, w)
     return (w, loss)
+
+def apply_ridge_regression(y, x, degrees, lambdas, kfold, seed, important_features, other_features):
+    lendegrees = len(degrees)
+    lenlambdas = len(lambdas)
+    lm = np.zeros((lendegrees, lenlambdas))
+    wm = []
+    row = len(y)
+    size = np.floor(row/kfold)
+    np.random.seed(seed)
+    permutation = np.random.permutation(row)
+    for i in range(kfold):
+        indices = [permutation[i * size: (i + 1) * size]]
+    k = np.array(indices)
+    for i, degree in enumerate(degrees):
+        multi = build_multinomial(x, degree, important_features, other_features)
+        wl = []
+        for j, l in enumerate(lambdas):
+            w1 = []
+            loss1 = []
+
+            for n in range(kfold):
+                test1 = y[k[n]]
+                train1 = np.delete(y, k[n])
+                test2 = multi(k[l])
+                train2 = np.delete(multi, k[l], 0)
+                w2 = ridge_regression(train1, train2, l)
+                loss2 = len(np.where(predict_labels(w2, test2) != test1)[0])/len(test1)
+                w1.append(w2)
+                loss1.append(loss2)
+
+            wmean = np.asarray(w1).T.mean(1)
+            lossmean = np.mean(loss1)
+            wl.append(wmean)
+            lm[i, j] = lossmean
+        wm.append(wl)
+    mini = np.argwhere(lm == np.min(lm))
+
+    return wm[mini[0, 0]][mini[0, 1]], degrees[mini[0, 0]]
+
 
 
 def ridge_regression(y, tx, lambda_):
