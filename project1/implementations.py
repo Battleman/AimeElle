@@ -2,7 +2,7 @@
 ####### IMPORTS ########
 ########################
 import numpy as np
-
+import itertools
 
 ########################
 ######## HELPERS #######
@@ -75,7 +75,7 @@ def build_poly(x, degree):
     # by applying the polynomial basis to the input data
 
     phi = np.vander(x, N=degree+1, increasing=True)
-
+    # print("Phi of {} degr {} is {}".format(x,degree,phi))
     return phi
 
 
@@ -83,9 +83,10 @@ def build_multinomial(tx, degree, important_features, other_features):
     # build usual polinomial
     poly_other = []
     for feature in other_features:
-        poly_other.append(build_poly(tx[:, feature], degree)[:, 1:])
+        data_col = tx[:, feature]
+        poly_other.append(build_poly(data_col, degree)[:, 1:])
     poly_other = np.concatenate(poly_other, axis=1)
-
+    print("Poly other is {}".format(poly_other))
     # build polinomial with cross terms as well for important features
     poly_important = build_multinomial_crossterms(
         tx[:, important_features], degree)
