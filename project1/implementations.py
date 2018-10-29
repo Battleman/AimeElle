@@ -47,6 +47,7 @@ def NLL(y, tx, w):
 
 def multinomial_partitions(n, k):
     """returns an array of length k sequences of integer partitions of n"""
+    print("Multinomial partition for ({},{})".format(n,k))
     nparts = itertools.combinations(range(1, n+k), k-1)
     tmp = [(0,) + p + (n+k,) for p in nparts]
     sequences = np.diff(tmp) - 1
@@ -57,7 +58,9 @@ def build_multinomial_crossterms(tx, degree):
     '''Make multinomial feature matrix'''
     order = np.arange(degree)+1
     Xtmp = np.ones_like(tx[:, 0])
+    print("Building multinomial feature matrix")
     for ord in order:
+        print("Order {}".format(ord))
         if ord == 1:
             fstmp = tx
         else:
@@ -80,7 +83,17 @@ def build_poly(x, degree):
 
 
 def build_multinomial(tx, degree, important_features, other_features):
-    # build usual polinomial
+    """Build a polynomial list of a certain degree
+    
+    Arguments:
+        tx {np.ndarray} -- 2D numpy array. First dimension is rows, second dimension is features
+        degree {int} -- Maximum degree to apply
+        important_features {iterable} -- list or tuple of ints. Indices of the "important" columns
+        other_features {iterable} -- list or tuple of ints. Indices of the "other" columns
+    
+    Returns:
+        [type] -- [description]
+    """
     poly_other = []
     for feature in other_features:
         data_col = tx[:, feature]
@@ -91,9 +104,8 @@ def build_multinomial(tx, degree, important_features, other_features):
     poly_important = build_multinomial_crossterms(
         tx[:, important_features], degree)
 
-    poly = np.column_stack((poly_important, poly_other))
+    return np.column_stack((poly_important, poly_other))
 
-    return poly
 ########################
 ###### ASSIGNMENT ######
 ########################

@@ -3,18 +3,14 @@
 import csv
 import numpy as np
 
-def standardize(tx):
-    tx_local = tx.copy()
-    means = []
-    stds = []
-    for col in tx_local.T:
-        mean = np.mean(col)
-        std = np.std(col)
-        col -= mean
-        col /= std
-        means += [mean]
-        stds += [std]
-    return tx_local, means, stds
+def standardize(x):
+    """Standardize the original data set."""
+    mean_x = np.mean(x, axis = 0)
+    x = x - mean_x
+    std_x = np.std(x, axis = 0)
+    std_x[np.logical_and(mean_x == 0, std_x == 0)] = 1
+    x = x / std_x
+    return x, mean_x, std_x
 
 def load_csv_data(data_path, sub_sample=False):
     """Loads data and returns y (class labels), tX (features) and ids (event ids)"""
