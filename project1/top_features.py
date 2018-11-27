@@ -1,3 +1,5 @@
+# courtesy of github.com/gregunz
+
 from proj1_helpers import standardize
 import numpy as np
 def shan_entropy(c):
@@ -21,8 +23,7 @@ def top_features(tx_cat, y_cat, max_features):
     bins = 50
     top_features = []
     other_features = []
-    
-    
+
     for i in range(len(tx_cat)):
     
         # Standardize Data, for iterative methods
