@@ -11,10 +11,9 @@ def _calculate_mae(err_vec):
     return np.mean(np.abs(err_vec))
 
 
-def compute_loss(y, tx, w, method="mse"):
-    """Calculate the loss.
-
-    You can calculate the loss using mse or mae.
+def compute_loss(tx, y, w, method="mse"):
+    """
+        Calculate the loss. You can calculate the loss using mse or mae.
     """
     y_hat = tx.dot(w)
     err_vec = y - y_hat

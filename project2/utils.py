@@ -2,7 +2,7 @@
 """This module provides multiple helpers functions"""
 import numpy as np
 
-def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
+def batch_iter(tx, y, batch_size, num_batches=1, shuffle=True):
     """
         Generate a minibatch iterator for a dataset.
         Takes as input two iterables (here the output desired values\
@@ -19,8 +19,8 @@ def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
 
     if shuffle:
         shuffle_indices = np.random.permutation(np.arange(data_size))
-        shuffled_y = y[shuffle_indices]
-        shuffled_tx = tx[shuffle_indices]
+        shuffled_y = y.iloc[shuffle_indices]
+        shuffled_tx = tx.iloc[shuffle_indices]
     else:
         shuffled_y = y
         shuffled_tx = tx
@@ -28,4 +28,4 @@ def batch_iter(y, tx, batch_size, num_batches=1, shuffle=True):
         start_index = batch_num * batch_size
         end_index = min((batch_num + 1) * batch_size, data_size)
         if start_index != end_index:
-            yield shuffled_y[start_index:end_index], shuffled_tx[start_index:end_index]
+            yield shuffled_tx.iloc[start_index:end_index].values, shuffled_y.iloc[start_index:end_index].values

@@ -2,36 +2,11 @@
 # coding: utf-8
 
 import gc
-import re
 
 import numpy as np
 import pandas as pd
-# import scipy.stats as spstats
 from sklearn.feature_selection import SelectKBest, f_regression
 from sklearn.preprocessing import PolynomialFeatures
-
-# import matplotlib.pyplot as plt
-
-
-def main():
-    """Simple function to be launched and demonstrate preprocessing"""
-    df_spectra_raw, df_measures_raw, df_train_test_split_raw = get_initial_df(
-        'data')
-    meta_cols = ['SiteCode', 'Date', 'flag',
-                 'Latitude', 'Longitude', 'DUSTf:Unc']
-    y_col = 'DUSTf:Value'
-
-    merged = preparation(df_spectra_raw,
-                         df_measures_raw,
-                         meta_cols,
-                         y_col)
-    X, y, _, _ = splitting(merged,
-                           df_train_test_split_raw,
-                           meta_cols,
-                           y_col)
-    best_features = features_selection(X, y, 30)
-    X = features_expansion(X, 4, best_features)
-    print(X)
 
 
 def get_initial_df(basedir):
@@ -62,7 +37,7 @@ def get_initial_df(basedir):
 
 # def get_sample_code(df, col):
 
-def preparation(df_spectra_raw, df_measures_raw, meta_cols, y_col):
+def preparation(df_spectra_raw, df_measures_raw, meta_cols, unc_col, y_col):
     """
         Prepares a DataFrame by merging spectra and measures and selecting\
         necessary columns
@@ -86,7 +61,7 @@ def preparation(df_spectra_raw, df_measures_raw, meta_cols, y_col):
     """
 
     df_measures = df_measures_raw.set_index('site')
-    df_measures = df_measures[meta_cols + [y_col]]
+    df_measures = df_measures[meta_cols + [y_col, unc_col]]
     df_measures.index = pd.Index(df_measures.index, name="")
 
     df_spectra = df_spectra_raw.T
@@ -102,11 +77,12 @@ def preparation(df_spectra_raw, df_measures_raw, meta_cols, y_col):
     return merged
 
 
-def splitting(merged, df_train_test_split_raw, meta_cols, y_col):
+def splitting(merged, df_train_test_split_raw, meta_cols, unc_col, y_col):
     """ Test/train separation"""
     train = df_train_test_split_raw[df_train_test_split_raw.usage ==
                                     "calibration"].site
     test = df_train_test_split_raw[df_train_test_split_raw.usage == "test"].site
+
     merged_train = merged.loc[np.isin(merged.index, train)]
     merged_test = merged.loc[np.isin(merged.index, test)]
 
@@ -115,14 +91,16 @@ def splitting(merged, df_train_test_split_raw, meta_cols, y_col):
     gc.collect()
 
     # ## X,y creation
-    X_train = merged_train.loc[:, [
-        x for x in merged_train.columns if x not in [y_col] + meta_cols]]
+    tx_train = merged_train.loc[:, [
+        x for x in merged_train.columns if x not in [y_col, unc_col] + meta_cols]]
     y_train = merged_train[y_col]
-    X_test = merged_train.loc[:, [
-        x for x in merged_test.columns if x not in [y_col] + meta_cols]]
-    y_test = merged_train[y_col]
+    unc_train = merged_train[unc_col]
+    tx_test = merged_test.loc[:, [
+        x for x in merged_test.columns if x not in [y_col, unc_col] + meta_cols]]
+    y_test = merged_test[y_col]
+    unc_test = merged_test[unc_col]
 
-    return X_train, y_train, X_test, y_test
+    return tx_train, y_train, unc_train, tx_test, y_test, unc_test
 
 
 def features_selection(X, y, k=30, method="f_regression"):
@@ -164,7 +142,7 @@ def features_expansion(X, bests_degree, best_cols):
     new_features = pd.DataFrame(poly_features.fit_transform(X[best_cols]),
                                 index=X.index)
     mask_best_cols = np.isin(X.columns, best_cols)
-    #TODO est-ce que les combinaisons incluent aussi x1, x2,... (aka)
+    # TODO est-ce que les combinaisons incluent aussi x1, x2,... (aka)
     # est-ce qu'il faut les enlever du DF original ?
     return pd.concat(
         [X[X.columns[~mask_best_cols]], new_features],
