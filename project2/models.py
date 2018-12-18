@@ -1,4 +1,3 @@
-import csv
 
 import numpy as np
 
@@ -6,7 +5,7 @@ from loss import compute_loss
 from utils import batch_iter
 
 
-def _least_squares(tx, y):
+def least_squares(tx_train, y_train, tx_test, y_test):
     """
         Does least squares
 
@@ -18,37 +17,15 @@ def _least_squares(tx, y):
             np.ndarray -- Supposed optimal weights (regression coefficients)
     """
 
-    gram_mat = tx.T.dot(tx)
-    b = tx.T.dot(y)
-    return np.linalg.solve(gram_mat, b)
-
-
-def baseline(tx_train, y_train, tx_test, y_test, filename):
-    """
-        Baseline method for comparison purpose
-
-        Arguments:
-            tx_train {np.ndarray} -- Reference samples
-            y_train {np.ndarray} -- Reference values
-            tx_test {np.ndarray} -- Test samples
-            y_test {np.ndarray} -- Test values
-            filename {[type]} -- filename to which append results
-
-        Returns:
-            float, np.ndarray -- The loss and the regression coefficients
-    """
-
-    w_opt = _least_squares(tx_train, y_train)
-    loss = compute_loss(tx_test, y_test, w_opt)
-    with open(filename, "a") as f:
-        writer = csv.writer(f)
-        writer.writerow(["baseline", w_opt, loss])
-    return loss, w_opt
+    gram_mat = tx_train.T.dot(tx_train)
+    xty = tx_train.T.dot(y_train)
+    weights = np.linalg.solve(gram_mat, xty)
+    loss = compute_loss(tx_test, y_test, weights)
+    return loss, weights
 
 
 def _compute_gradient(tx, y, weights):
     """Compute the gradient."""
-    # print("Shapes:\n\ttx: {}\n\ty: {}\n\tweights: {}".format(tx.shape, y.shape, weights.shape))
     y_hat = tx.dot(weights)
     err = y - y_hat
     grad = -tx.T.dot(err) / len(err)
@@ -96,8 +73,9 @@ def gradient_descent(tx, y, initial_w, max_iters, gamma, num_batch=1):
                 print("Iteration {}, loss is {}".format(i, loss))
         else:
             print("Iteration {}, loss is {}".format(i, loss))
-        if  loss_bef > 0 and loss_bef - loss < 10e-3:
-            print("Iteration {}, loss was {}, now is {}, diff = {}".format(i, loss_bef, loss, loss_bef-loss))
+        if loss_bef > 0 and loss_bef - loss < 10e-3:
+            print("Iteration {}, loss was {}, now is {}, diff = {}".format(
+                i, loss_bef, loss, loss_bef-loss))
             break
     return loss, weights
 

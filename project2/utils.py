@@ -1,6 +1,8 @@
 #!/usr/bin/python3
 """This module provides multiple helpers functions"""
 import numpy as np
+import csv
+
 
 def batch_iter(tx, y, batch_size, num_batches=1, shuffle=True):
     """
@@ -29,3 +31,19 @@ def batch_iter(tx, y, batch_size, num_batches=1, shuffle=True):
         end_index = min((batch_num + 1) * batch_size, data_size)
         if start_index != end_index:
             yield shuffled_tx.iloc[start_index:end_index].values, shuffled_y.iloc[start_index:end_index].values
+
+
+def save_results(filename, method, w, loss):
+    """
+        Append results in a csv file
+
+        Arguments:
+            filename {str} -- name of the file where to save
+            method {str} -- Name of the method for this result
+            w {np.ndarray} -- weights
+            loss {float} -- Loss of the model
+    """
+
+    with open(filename, "a") as f:
+        writer = csv.writer(f)
+        writer.writerow([method, w, loss])
