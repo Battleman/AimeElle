@@ -1,5 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.metrics import r2_score
+
+BASEDIR = "figures/"
 
 
 def y_compare(tx, y, w, filename):
@@ -17,7 +20,8 @@ def y_compare(tx, y, w, filename):
     plt.plot(np.arange(max(y)), np.arange(max(y)), color="black")
     plt.xlabel('y')
     plt.ylabel('ŷ')
-    plt.savefig(filename)
+    plt.text(2, 180, "r²: {}".format(r2_score(y, y_hat)))
+    plt.savefig(BASEDIR+filename)
     plt.show()
 
 
@@ -36,7 +40,7 @@ def snr_plot(tx, y, w, unc, filename):
     plt.scatter(y/unc, (y-y_hat)/unc)
     plt.xlabel('SNR')
     plt.ylabel('Residuals normalized')
-    plt.savefig(filename)
+    plt.savefig(BASEDIR+filename)
     plt.show()
 
 
@@ -49,5 +53,5 @@ def cross_validation_visualization(lambdas, mse_tr, mse_te, filename):
     plt.title("cross validation")
     plt.legend(loc=2)
     plt.grid(True)
-    plt.savefig(filename)
+    plt.savefig(BASEDIR+filename)
     plt.show()
