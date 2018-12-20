@@ -55,3 +55,13 @@ def cross_validation_visualization(lambdas, mse_tr, mse_te, filename):
     plt.grid(True)
     plt.savefig(BASEDIR+filename)
     plt.show()
+
+def ridge_regression_lambdas_visualization(lambdas, losses, filename):
+    plt.semilogx(lambdas, losses, marker=".", color='b', label='train error')
+    plt.xlabel("lambda")
+    plt.ylabel("loss")
+    plt.title("Ridge regression")
+    plt.legend(loc=2)
+    plt.grid(True)
+    plt.savefig(BASEDIR+filename)
+    plt.show()

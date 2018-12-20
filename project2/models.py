@@ -24,16 +24,6 @@ def least_squares(tx_train, y_train, tx_test, y_test):
     return loss, weights
 
 
-def _compute_gradient(tx, y, weights):
-    """Compute the gradient."""
-    y_hat = tx.dot(weights)
-    err = y - y_hat
-    grad = -tx.T.dot(err) / len(err)
-    if isinstance(grad, np.ndarray):
-        return grad
-    return grad.values
-
-
 def gradient_descent(tx, y, initial_w, max_iters, gamma, num_batch=1):
     """
         Does a gradient descent (stochastic or complete)
@@ -52,6 +42,15 @@ def gradient_descent(tx, y, initial_w, max_iters, gamma, num_batch=1):
         Returns:
             float, np.ndarray -- The loss and the regression coefficients
     """
+    def _compute_gradient(tx, y, weights):
+        """Compute the gradient."""
+        y_hat = tx.dot(weights)
+        err = y - y_hat
+        grad = -tx.T.dot(err) / len(err)
+        if isinstance(grad, np.ndarray):
+            return grad
+        return grad.values
+
     # Define parameters to store w and loss
     ws = [initial_w]
     losses = []
@@ -80,9 +79,10 @@ def gradient_descent(tx, y, initial_w, max_iters, gamma, num_batch=1):
     return loss, weights
 
 
-def ridge_regression(tx, y, lambda_):
-
+def ridge_regression(tx, y, tx_test, y_test, lambda_):
     aI = 2 * tx.shape[0] * lambda_ * np.identity(tx.shape[1])
     a = tx.T.dot(tx) + aI
     b = tx.T.dot(y)
-    return np.linalg.solve(a, b)
+    weights = np.linalg.solve(a, b)
+    loss = compute_loss(tx_test, y_test, weights)
+    return loss, weights

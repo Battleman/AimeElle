@@ -135,15 +135,21 @@ def features_expansion(X, bests_degree, best_cols):
         Returns:
             pd.DataFrame -- X expanded with the polynomial features
     """
-
+    # return PolynomialFeatures(degree=bests_degree, interaction_only=True, include_bias=False).fit_transform(X)
     poly_features = PolynomialFeatures(degree=bests_degree,
                                        interaction_only=False,
                                        include_bias=False)
     new_features = pd.DataFrame(poly_features.fit_transform(X[best_cols]),
                                 index=X.index)
     mask_best_cols = np.isin(X.columns, best_cols)
-    # TODO est-ce que les combinaisons incluent aussi x1, x2,... (aka)
-    # est-ce qu'il faut les enlever du DF original ?
+
     return pd.concat(
         [X[X.columns[~mask_best_cols]], new_features],
         axis=1)
+
+def build_poly(x, degree):
+    """polynomial basis functions for input data x, for j=0 up to j=degree."""
+    poly = pd.concat([pd.DataFrame(np.ones((len(x), 1)), columns=[1], index=x.index), x], axis=1)
+    for deg in range(2, degree+1):
+        poly = pd.concat([poly, pd.DataFrame(x.pow(deg).values, index=x.index, columns=["{}**{}".format(name, deg) for name in x.columns])], axis=1, sort=False)
+    return poly
