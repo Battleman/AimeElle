@@ -17,10 +17,11 @@ def y_compare(tx, y, w, filename):
     """
     y_hat = tx.dot(w)
     plt.scatter(y, y_hat, s=4)
-    plt.plot(np.arange(max(y)), np.arange(max(y)), color="black")
-    plt.xlabel('y')
-    plt.ylabel('ŷ')
-    plt.text(2, 180, "r²: {}".format(r2_score(y, y_hat)))
+    plt.plot(np.arange(max(y)), np.arange(max(y)), color="black", label="y=ŷ")
+    plt.xlabel('measures (y)')
+    plt.ylabel('prediction (ŷ)')
+    plt.title("Precision (r²: {})".format(r2_score(y, y_hat)))
+    plt.legend()
     plt.savefig(BASEDIR+filename)
     plt.show()
 
@@ -37,10 +38,15 @@ def snr_plot(tx, y, w, unc, filename):
             filename {str} -- Name of file to save figure
     """
     y_hat = tx.dot(w)
-    plt.scatter(y/unc, (y-y_hat)/unc)
+    plt.scatter(y/unc, (y-y_hat)/unc, s=3, label="bias")
+    plt.plot(range(int(max(y/unc))), [3]*len(range(int(max(y/unc)))), c="black", linewidth=1, label="'3' threshold")
+    plt.plot(range(int(max(y/unc))), [-3]*len(range(int(max(y/unc)))), c="black", linewidth=1)
+    plt.plot(range(int(max(y/unc))), [np.mean((y-y_hat)/unc)]*len(range(int(max(y/unc)))), c="red", linewidth=1, label="mean")
+    plt.title("Bias plot (mean: {})".format(np.mean((y-y_hat)/unc)))
     plt.xlabel('SNR')
     plt.ylabel('Residuals normalized')
-    plt.savefig(BASEDIR+filename)
+    plt.legend()
+    plt.savefig("figures/"+filename)
     plt.show()
 
 
